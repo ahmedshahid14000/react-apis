@@ -21,8 +21,8 @@ jobs:
 
       - name: Copy project to EC2
         run: |
-          rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
-            --exclude='.git' \
+           rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+             --exclude='.git' \
            ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/app
 
       - name: Deploy with Docker Compose
