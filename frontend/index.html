@@ -23,7 +23,7 @@
       const name = document.getElementById('name').value;
       const email = document.getElementById('email').value;
 
-      await fetch('http://localhost:3000/users', {
+      await fetch('http://ec2-3-76-100-68.eu-central-1.compute.amazonaws.com:3000/users', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ name, email })
