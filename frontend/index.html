@@ -33,7 +33,8 @@
     });
 
     async function loadUsers() {
-      const res = await fetch('http://localhost:3000/users');
+      const res = await fetch('http://ec2-3-76-100-68.eu-central-1.compute.amazonaws.com:3000/users')
+;
       const users = await res.json();
       userList.innerHTML = '';
       users.forEach(user => {
