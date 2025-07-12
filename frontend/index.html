@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CRUD UI</title>
+</head>
+<body>
+  <h1>Items List</h1>
+  <ul id="itemList"></ul>
+
+  <script>
+    fetch("http://localhost:3000/items")
+      .then((res) => res.json())
+      .then((items) => {
+        const list = document.getElementById("itemList");
+        items.forEach(item => {
+          const li = document.createElement("li");
+          li.textContent = item.name;
+          list.appendChild(li);
+        });
+      });
+  </script>
+</body>
+</html>
