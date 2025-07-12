@@ -2,30 +2,37 @@ version: '3.8'
 
 services:
   mysql:
-    image: mysql:8
-    container_name: mysql
+    image: mysql:8.0
+    container_name: usermanagement-mysql
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: usersdb
-    ports:
-      - "3306:3306"
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: userdb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
     volumes:
       - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
 
   backend:
     build: ./backend
+    container_name: usermanagement-backend
+    restart: always
     depends_on:
       - mysql
-    ports:
-      - "3000:3000"
     environment:
       DB_HOST: mysql
-      DB_USER: root
-      DB_PASSWORD: root
-      DB_NAME: usersdb
+      DB_USER: user
+      DB_PASSWORD: userpassword
+      DB_NAME: userdb
+    ports:
+      - "3000:3000"
 
   frontend:
     build: ./frontend
+    container_name: usermanagement-frontend
+    restart: always
     ports:
       - "8081:80"
 
