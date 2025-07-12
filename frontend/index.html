@@ -1,23 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>CRUD UI</title>
+  <title>User Form</title>
 </head>
 <body>
-  <h1>Items List</h1>
-  <ul id="itemList"></ul>
+  <h1>Register User</h1>
+  <form id="userForm">
+    <input type="text" id="name" placeholder="Name" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <button type="submit">Submit</button>
+  </form>
+
+  <h2>Users</h2>
+  <ul id="userList"></ul>
 
   <script>
-    fetch("http://localhost:3000/items")
-      .then((res) => res.json())
-      .then((items) => {
-        const list = document.getElementById("itemList");
-        items.forEach(item => {
-          const li = document.createElement("li");
-          li.textContent = item.name;
-          list.appendChild(li);
-        });
+    const form = document.getElementById('userForm');
+    const userList = document.getElementById('userList');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+
+      await fetch('http://localhost:3000/users', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name, email })
       });
+
+      loadUsers();
+    });
+
+    async function loadUsers() {
+      const res = await fetch('http://localhost:3000/users');
+      const users = await res.json();
+      userList.innerHTML = '';
+      users.forEach(user => {
+        const li = document.createElement('li');
+        li.textContent = `${user.name} (${user.email})`;
+        userList.appendChild(li);
+      });
+    }
+
+    loadUsers();
   </script>
 </body>
 </html>

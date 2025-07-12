@@ -1,36 +1,46 @@
-const express = require("express");
-const cors = require("cors");
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const mysql = require('mysql2');
 
 const app = express();
-const port = 3000;
-
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-let items = [{ id: 1, name: "Item 1" }];
-
-// READ: Get all items
-app.get("/items", (req, res) => {
-  res.json(items);
+const db = mysql.createConnection({
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'usersdb',
 });
 
-// CREATE: Add new item
-app.post("/items", (req, res) => {
-  const newItem = { id: Date.now(), name: req.body.name };
-  items.push(newItem);
-  res.status(201).json(newItem);
+db.connect(err => {
+  if (err) throw err;
+  console.log('MySQL connected');
+  db.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(100),
+      email VARCHAR(100)
+    )
+  `);
 });
 
-// DELETE: Remove item by ID
-app.delete("/items/:id", (req, res) => {
-  items = items.filter((item) => item.id != req.params.id);
-  res.status(204).send();
+app.post('/users', (req, res) => {
+  const { name, email } = req.body;
+  db.query('INSERT INTO users (name, email) VALUES (?, ?)', [name, email], (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.send({ id: result.insertId, name, email });
+  });
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+app.get('/users', (req, res) => {
+  db.query('SELECT * FROM users', (err, rows) => {
+    if (err) return res.status(500).send(err);
+    res.json(rows);
+  });
 });
 
 app.listen(3000, '0.0.0.0', () => {
-  console.log('Server is running on port 3000');
+  console.log('Backend running on port 3000');
 });
