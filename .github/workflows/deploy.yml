@@ -1,9 +1,9 @@
-name: Deploy to EC2
+name: Deploy UserManagement App to EC2
 
 on:
   push:
     branches:
-      - main  # change if needed
+      - main
 
 jobs:
   deploy:
@@ -13,34 +13,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+      # Optional: Build images locally (skip if you want EC2 to build)
+      # - name: Build backend image
+      #   run: docker build -t usermanagement-backend ./backend
 
-      - name: Install dependencies
-        run: npm ci
+      # - name: Build frontend image
+      #   run: docker build -t usermanagement-frontend ./frontend
 
-      - name: Build React app
-        run: npm run build
-
-      - name: Setup SSH key and known hosts
+      - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Copy project files to EC2
+      - name: Copy project to EC2
         run: |
-          scp -r -i ~/.ssh/id_rsa ./build ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/react-app
-          scp -r -i ~/.ssh/id_rsa ./backend ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/backend
-          scp -i ~/.ssh/id_rsa docker-compose.yml ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/docker-compose.yml
+          scp -i ~/.ssh/id_rsa -r ./ ubuntu@${{ secrets.EC2_HOST }}:~/usermanagement-app
 
-      - name: SSH into EC2 and restart services
+      - name: Deploy on EC2
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            cd /home/${{ secrets.EC2_USER }}
-            docker compose down
-            docker compose up -d --build
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            cd ~/usermanagement-app
+            docker-compose down
+            docker-compose up -d --build
           EOF
